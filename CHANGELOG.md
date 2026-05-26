@@ -1,5 +1,56 @@
 # Changelog
 
+## [2.3.0] - 2026-05-26
+
+### Stage 5c: Audio Synthesis — 系统化音频生产管线
+
+#### 新增脚本（5 个）
+
+- **`scripts/generate_audio_plan.py`** — 自动音频方案生成器
+  - 读取 storyboard.json + scenes.json + characters.json，输出 `audio_plan.json`
+  - **BGM 情绪映射表**：8 种核心情绪（melancholic / weary / hopeful / tense / joyful / sinister / nostalgic / bittersweet）→ 流派 / BPM / 调性 / 配器 / 强度
+  - **角色声线分配**：按角色年龄、性别、性格自动匹配 TTS 音色（ElevenLabs / edge-tts 双后端）
+  - **音效事件**：自动提取 foley 关键时刻（开门、雨声、碰撞等），生成 14 类精确音效 cue
+  - **智能合并**：相邻同流派 BGM 自动合并，减少音乐段落数量
+
+- **`scripts/synthesize_voice.py`** — TTS 配音合成器
+  - **双引擎支持**：ElevenLabs API（付费，电影级）+ edge-tts（免费，本地，中文优化）
+  - 角色原型 → 音色映射：`young_male` / `young_female` / `middle_aged_male` / `middle_aged_female` / `elderly` / `child` / `narrator` / `antagonist`
+  - 输出目录：`assets/audio/voice/{shot_id}_{speaker}.mp3`
+
+- **`scripts/mix_audio.py`** — 多轨混音器
+  - FFmpeg `amix` 滤镜实现 BGM + 配音 + 音效三层混音
+  - 自动音量平衡：BGM -18dB、配音 -6dB、音效 -12dB，对话期间 BGM 自动 ducking
+  - 支持 `--bgm` 外部音轨或 `--auto-bgm` 提示词生成模式
+
+- **`scripts/srt_generator.py` v2** — 字幕生成器升级
+  - **双时间轴模式**：v1（scenes.json 估算）/ v2（audio_plan.json 精确配音时长）
+  - **双格式输出**：SRT（通用兼容）+ ASS（动漫风格，含字体 / 描边 / 定位）
+  - **三套预设样式**：`anime`（白字黑边 24px）、`dialogue`（28px 对话专用）、`minimal`（20px 细边极简）
+  - ASS 支持角色名作为 Name 字段，可在 Aegisub 中按角色筛选
+
+- **`scripts/compile_video.py` 升级**
+  - 新增 `--audio` 参数：自动叠加混音后的音频轨
+  - 新增 `--subtitles-style` 参数：`anime` / `dialogue` / `minimal`
+  - **libass 能力检测**：运行时检测 FFmpeg 是否编译了 subtitles/ass 滤镜
+  - **优雅降级**：若系统 FFmpeg 缺少 libass，自动跳过字幕烧录，输出外部字幕文件并提示用户使用 VLC/MPV 外挂字幕
+  - Python 3.9 兼容修复：移除 `str | None` 联合类型语法
+
+#### 文档更新
+
+- **`SKILL.md`**：新增 **Stage 5c: Audio Synthesis** 完整章节，含 5 步工作流（生成音频方案 → 生成字幕 → 合成配音 → 混音 → 编译成片）
+- **`reference.md`**：新增「Audio Synthesis Reference」参考手册，含 BGM 情绪映射表、TTS 声线选择指南、audio_plan.json 完整 schema、BGM 获取策略（Suno / Epidemic Sound / YouTube Audio Library / freesound）、音频混音 dB 规则、字幕样式预设详解
+- **项目输出结构**：新增 `audio_plan.json`、`subtitles.ass`、`assets/audio/` 目录说明
+
+#### 演示验证
+
+- 以「雨夜便利店」测试脚本运行完整管线，成功生成：
+  - `audio_plan.json`：3 段 BGM + 40 条配音 cue + 14 个音效事件 + 48 条字幕
+  - `subtitles.srt` / `subtitles.ass`：完整中日双语字幕
+  - 视频编译通过（字幕烧录因系统 FFmpeg 缺少 libass 而优雅降级为外部字幕）
+
+---
+
 ## [2.2.0] - 2026-05-26
 
 ### 玩家评估报告优化（按骨灰级玩家反馈逐一修复）

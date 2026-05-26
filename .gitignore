@@ -27,5 +27,6 @@ output/
 
 # 项目生成文件（用户数据）
 test_project_*/
+scripts/rainy_store/
 *.srt
 axis_check_report.json

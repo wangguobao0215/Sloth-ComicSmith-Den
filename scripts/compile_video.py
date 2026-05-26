@@ -15,6 +15,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 
 def load_storyboard(project_dir: Path) -> dict:
@@ -65,7 +66,7 @@ def build_concat_list(project_dir: Path, shots: list, transition: str, default_d
     return concat_file
 
 
-def compile_video(project_dir: Path, transition: str, bgm: str | None, output_name: str):
+def compile_video(project_dir: Path, transition: str, bgm: Optional[str], audio_track: Optional[str], subtitle_style: str, output_name: str):
     storyboard = load_storyboard(project_dir)
     shots = storyboard.get("shots", [])
     if not shots:
@@ -75,21 +76,66 @@ def compile_video(project_dir: Path, transition: str, bgm: str | None, output_na
     concat_file = build_concat_list(project_dir, shots, transition, default_duration=4)
     output_path = project_dir / output_name
 
+    # Determine subtitle source: ASS preferred over SRT for styling
+    ass_path = project_dir / "subtitles.ass"
+    srt_path = project_dir / "subtitles.srt"
+    subtitle_file = None
+    if ass_path.exists():
+        subtitle_file = ass_path
+    elif srt_path.exists():
+        subtitle_file = srt_path
+
     # Build FFmpeg command
     cmd = ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_file)]
 
-    # Add subtitles if present
-    srt_path = project_dir / "subtitles.srt"
-    if srt_path.exists():
-        cmd += ["-vf", f"subtitles={srt_path}:force_style='FontSize=24,Outline=2'"]
-
-    # Add BGM if provided
-    if bgm:
+    # Add audio track (mixed audio from mix_audio.py) or BGM
+    audio_input_idx = 1
+    if audio_track:
+        audio_path = Path(audio_track)
+        if not audio_path.is_absolute():
+            audio_path = project_dir / audio_path
+        if audio_path.exists():
+            cmd += ["-i", str(audio_path)]
+        else:
+            print(f"[WARN] Audio track not found: {audio_track}")
+            audio_input_idx = None
+    elif bgm:
         bgm_path = Path(bgm)
         if bgm_path.exists():
-            cmd += ["-i", str(bgm_path), "-shortest", "-c:a", "aac", "-b:a", "192k"]
+            cmd += ["-i", str(bgm_path)]
         else:
             print(f"[WARN] BGM file not found: {bgm}")
+            audio_input_idx = None
+    else:
+        audio_input_idx = None
+
+    # Check FFmpeg subtitle support
+    has_subtitles_filter = False
+    check = subprocess.run(["ffmpeg", "-filters"], capture_output=True, text=True)
+    if "subtitles" in check.stdout:
+        has_subtitles_filter = True
+
+    # Build video filter
+    vf_parts = []
+    if subtitle_file and has_subtitles_filter:
+        sub_path = str(subtitle_file.resolve()).replace(":", "\\:")
+        if subtitle_file.suffix == ".ass":
+            vf_parts.append(f"ass={sub_path}")
+        else:
+            vf_parts.append(f"subtitles={sub_path}")
+    elif subtitle_file and not has_subtitles_filter:
+        print(f"[WARN] FFmpeg lacks libass support. Subtitles not burned-in.")
+        print(f"  Use external player (VLC/MPV) with: {subtitle_file.name}")
+        print(f"  Or run: python scripts/burn_subtitles.py {project_dir}")
+
+    if vf_parts:
+        cmd += ["-vf", ",".join(vf_parts)]
+
+    # Audio mapping
+    if audio_input_idx is not None:
+        cmd += ["-map", "0:v", "-map", f"{audio_input_idx}:a", "-c:a", "aac", "-b:a", "192k", "-shortest"]
+    else:
+        cmd += ["-an"]  # No audio
 
     cmd += ["-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "23", str(output_path)]
 
@@ -102,6 +148,10 @@ def compile_video(project_dir: Path, transition: str, bgm: str | None, output_na
         sys.exit(1)
 
     print(f"[OK] Video compiled: {output_path}")
+    if subtitle_file:
+        print(f"  Subtitles: {subtitle_file.name} ({subtitle_style} style)")
+    if audio_input_idx is not None:
+        print(f"  Audio track: {audio_track or bgm}")
 
     # Cleanup temp concat file
     concat_file.unlink(missing_ok=True)
@@ -112,7 +162,10 @@ def main():
     parser.add_argument("project_dir", help="Path to project directory containing storyboard.json")
     parser.add_argument("--transition", choices=["fade", "dissolve", "wipe", "none"], default="fade",
                         help="Transition type between shots")
-    parser.add_argument("--bgm", default=None, help="Path to background music file")
+    parser.add_argument("--bgm", default=None, help="Path to background music file (legacy, use --audio)")
+    parser.add_argument("--audio", default=None, help="Path to mixed audio track (BGM + voice + foley)")
+    parser.add_argument("--subtitles-style", choices=["anime", "dialogue", "minimal"], default="anime",
+                        help="Subtitle burn-in style preset")
     parser.add_argument("--output", default="output_final.mp4", help="Output filename")
     args = parser.parse_args()
 
@@ -121,7 +174,7 @@ def main():
         print(f"[ERROR] Project directory not found: {project_dir}")
         sys.exit(1)
 
-    compile_video(project_dir, args.transition, args.bgm, args.output)
+    compile_video(project_dir, args.transition, args.bgm, args.audio, args.subtitles_style, args.output)
 
 
 if __name__ == "__main__":

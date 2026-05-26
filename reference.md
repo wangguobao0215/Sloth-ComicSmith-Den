@@ -1531,4 +1531,154 @@ Real-world performance of image/video models for comic/video production (as of 2
 
 ---
 
-*Reference Version: 2.2.0 | Aligns with SKILL.md v2.1.0*
+## Audio Synthesis Reference
+
+### BGM Emotion Mapping Table
+
+Use this table to match story mood to music characteristics. The `generate_audio_plan.py` script uses this catalog automatically.
+
+| Mood Keyword | Genre | Tempo (BPM) | Key | Instruments | Intensity | When to Use |
+|-------------|-------|-------------|-----|-------------|-----------|-------------|
+| melancholic | solo_piano | 60 | minor | piano, strings_pad | 0.3 | Sad reflection, loss, rain scenes |
+| weary | ambient | 50 | minor | synth_pad, rain_ambience | 0.2 | Exhaustion, insomnia, late night |
+| introspective | solo_piano | 65 | minor | piano, soft_strings | 0.3 | Internal monologue, decision-making |
+| hopeful | acoustic_folk | 80 | major | acoustic_guitar, strings | 0.5 | Turning point, new beginning, dawn |
+| tense | orchestral_tension | 90 | minor | strings, timpani | 0.7 | Confrontation, chase, revelation |
+| climactic | orchestral | 120 | minor | full_orchestra | 1.0 | Peak conflict, emotional explosion |
+| peaceful | ambient | 55 | major | synth_pad, bells | 0.2 | Resolution, morning after, acceptance |
+| lonely | solo_piano | 55 | minor | piano, solo_violin | 0.3 | Isolation, urban solitude, empty spaces |
+
+**Intensity adjustment by scene function**:
+- Exposition: base intensity × 0.8
+- Rising action: base intensity × 1.2
+- Turning point: base intensity × 1.5
+- Climax: base intensity × 2.0 (capped at 1.0)
+- Falling action: base intensity × 0.9
+- Resolution: base intensity × 0.6
+
+### TTS Voice Selection Guide
+
+| Character Archetype | Provider | Voice ID / Name | Speed | Best For |
+|--------------------|----------|-----------------|-------|----------|
+| Young female, weary | ElevenLabs | XB0fDUnXU5powFXDhCwa | 0.95 | Protagonist with emotional baggage |
+| Young female, determined | ElevenLabs | XB0fDUnXU5powFXDhCwa | 1.05 | Action scenes, resolve |
+| Middle-age male, kind | ElevenLabs | TX3AE3VoIzMeN6BkC0Gl | 0.90 | Mentor, shopkeeper, father figure |
+| Narrator / neutral | ElevenLabs | N2lVS1w4EtoT3dr4eOWO | 0.92 | Inner thoughts, exposition |
+| Young female (free) | edge-tts | zh-CN-XiaoxiaoNeural | 1.0 | Chinese, no API cost |
+| Young female alt (free) | edge-tts | zh-CN-XiaoyiNeural | 1.0 | Chinese, slightly brighter |
+| Middle-age male (free) | edge-tts | zh-CN-YunxiNeural | 1.0 | Chinese, warm tone |
+| Narrator (free) | edge-tts | zh-CN-YunjianNeural | 1.0 | Chinese, documentary style |
+
+### audio_plan.json Schema
+
+```json
+{
+  "project": "project_name",
+  "total_duration": 33.0,
+  "character_voices": {
+    "CharacterName": {
+      "name": "CharacterName",
+      "assigned_voice": "young_female_weary",
+      "tts_config": {
+        "provider": "elevenlabs",
+        "voice_id": "XB0fDUnXU5powFXDhCwa",
+        "speed": 0.95,
+        "pitch_shift": 0
+      },
+      "emotion_hint": "reserved, weary"
+    }
+  },
+  "bgm_cues": [
+    {
+      "start_time": 0.0,
+      "end_time": 9.0,
+      "genre": "solo_piano",
+      "tempo_bpm": 60,
+      "key": "minor",
+      "intensity": 0.25,
+      "instruments": ["piano", "strings_pad"],
+      "silence_flag": false,
+      "shots": ["S01-01", "S01-02"],
+      "bgm_source": "auto",
+      "generation_prompt": "solo_piano, minor key, 60 BPM, piano, strings_pad, intensity 0.25"
+    }
+  ],
+  "voice_cues": [
+    {
+      "shot_id": "S01-02",
+      "timestamp": 0.5,
+      "duration": 2.5,
+      "speaker": "Lin",
+      "text": "One black coffee, please.",
+      "voice_config": { "provider": "elevenlabs", "voice_id": "...", "speed": 0.95 },
+      "emotion": "neutral",
+      "output_file": "assets/audio/voice/S01-02_Lin.mp3"
+    }
+  ],
+  "foley_cues": [
+    {
+      "shot_id": "S01-01",
+      "timestamp": 0.5,
+      "sound": "door_chime",
+      "intensity": "medium",
+      "duration": 1.0,
+      "type": "foley",
+      "suggested_file": "assets/audio/foley/door_chime.mp3"
+    }
+  ],
+  "subtitle_entries": [
+    {
+      "index": 1,
+      "shot_id": "S01-02",
+      "start": 0.5,
+      "end": 3.0,
+      "speaker": "Lin",
+      "text": "One black coffee, please.",
+      "type": "spoken",
+      "style": "dialogue_white"
+    }
+  ]
+}
+```
+
+### BGM Acquisition Strategies
+
+| Method | Cost | Quality | Effort | Best For |
+|--------|------|---------|--------|----------|
+| **Suno AI** | $0.10/min | High, original | Low | Custom emotional arcs, unique sound |
+| **Epidemic Sound** | $15/month subscription | Professional | Medium | Consistent quality, large catalog |
+| **YouTube Audio Library** | Free | Variable | High | Zero budget projects |
+| **freesound.org** | Free (CC licensed) | Amateur | High | Foley and ambience only |
+| **Local composition** | Free | Depends on skill | Very high | Perfectionists with music background |
+
+### Audio Mixing Rules
+
+1. **BGM level**: -20 dB to -14 dB relative to full scale. Never compete with dialogue.
+2. **Voice level**: -12 dB to -6 dB. Loudest element in the mix.
+3. **Foley level**: -24 dB to -18 dB. Subtle but present.
+4. **Ambience level**: -30 dB to -24 dB. Felt, not heard.
+5. **Stinger/Music hit**: +3 dB above BGM baseline, then quick fade back.
+
+### Subtitle Style Presets
+
+**anime** (default):
+- Font: Arial, 24px
+- Color: White primary, black outline (2px)
+- Position: Bottom center
+- Thoughts: Italic, slightly dimmed
+
+**dialogue**:
+- Font: Arial, 28px
+- Color: White primary, black outline (2px)
+- Position: Bottom center
+- Better readability for dense dialogue
+
+**minimal**:
+- Font: Helvetica, 20px
+- Color: White primary, thin outline (1px)
+- Position: Bottom center
+- Unobtrusive, for artistic projects
+
+---
+
+*Reference Version: 2.2.0 | Aligns with SKILL.md v2.2.0*
