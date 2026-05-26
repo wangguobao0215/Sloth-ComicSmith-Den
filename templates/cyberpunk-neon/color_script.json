@@ -1,0 +1,10 @@
+{
+  "template": "cyberpunk-neon",
+  "cultural_context": "western",
+  "color_arc": [
+    {"scene_range": "S01-S03", "dominant_color": "deep_purple", "accent_color": "electric_cyan", "emotion": "urban decay with hidden beauty", "temperature": "cool"},
+    {"scene_range": "S04-S06", "dominant_color": "midnight_blue", "accent_color": "hot_magenta", "emotion": "rising tension, corporate conspiracy", "temperature": "mixed"},
+    {"scene_range": "S07-S08", "dominant_color": "blood_red", "accent_color": "sulfur_yellow", "emotion": "climactic confrontation", "temperature": "warm"},
+    {"scene_range": "S09", "dominant_color": "dawn_gray", "accent_color": "pale_neon_green", "emotion": "bittersweet resolution", "temperature": "neutral_cool"}
+  ]
+}

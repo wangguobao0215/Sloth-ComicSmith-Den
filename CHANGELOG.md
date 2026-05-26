@@ -1,5 +1,35 @@
 # Changelog
 
+## [2.2.0] - 2026-05-26
+
+### 玩家评估报告优化（按骨灰级玩家反馈逐一修复）
+
+#### P0 级：防止弃坑
+
+- **诚实前置 AI 限制**：Prerequisites 新增 ⚠️ Honest Limitations 章节，明确告知 AI 视频角色一致性无法保证、10 分钟视频预估成本 $50-200
+- **预算模式**：新增 `full` / `key_shots_only` / `storyboard_only` 三种预算模式，storyboard_only 零 API 成本输出专业分镜稿
+- **Stage 3.5 快速验证**：新增 Validate & Preview 阶段，先生成 1-2 张测试图确认风格和角色后再投入完整生产
+- **Stage 5b 重构**：改为「可选高级工作流」，提供 FFmpeg-only 快速编译路径（`scripts/compile_video.py`）和专业修复路径两套方案
+- **成本估算器升级**：`scripts/cost_estimator.py` 支持 `--mode` 参数（full/key_shots_only/storyboard_only），自动输出 `cost_estimate.json`
+
+#### P1 级：提升体验
+
+- **风格一致性检查**：新增 `scripts/check_style_drift.py`，对比生成图与 style board 的色彩直方图差异，超出阈值时报警
+- **项目快照**：新增 `scripts/snapshot.py`，支持 git commit 或 zip 存档，实验前一键保存状态
+- **风格切换**：新增 `scripts/switch_style.py`，支持 8 种预设（anime-cel/ghibli/noir/cyberpunk-neon 等）一键切换，无需重新解析剧本
+- **未来兼容标记**：`acting_beats`、`micro_expression`、`action_units_facs` 明确标注为 🔮 Future-proof 字段，当前仅作人类参考
+
+#### P2 级：扩展能力
+
+- **剧本预处理**：新增 `scripts/preprocess_script.py`，自动识别 screenplay / novel / dialogue_only / outline 四种格式并标准化
+- **共享模板**：新增 `templates/` 目录，内置 cyberpunk-neon、ghibli、noir、manga-ink 四种风格模板
+
+#### P3 级：锦上添花
+
+- **AI 模型评测矩阵**：`reference.md` 新增 Midjourney/DALL-E/SDXL/Flux/Gemini/Kling/Runway 七模型横评表，含角色一致性、动漫风格、多角色同框、成本等维度
+
+---
+
 ## [2.1.1] - 2026-05-26
 
 ### 品牌重命名

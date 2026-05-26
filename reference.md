@@ -1497,4 +1497,38 @@ For Midjourney `--sref`, pass style board images:
 
 ---
 
+## AI Model Evaluation Matrix
+
+Real-world performance of image/video models for comic/video production (as of 2026). Use this to pick the right tool for your task.
+
+| Task | Midjourney v6 | DALL-E 3 | SDXL | Flux | Gemini Image | Kling | Runway Gen-3 |
+|------|:-------------:|:--------:|:----:|:----:|:------------:|:-----:|:------------:|
+| **Character consistency (static)** | ★★★★ | ★★ | ★★★ | ★★★★ | ★★★ | — | — |
+| **Character consistency (video)** | — | — | — | — | — | ★★ | ★★ |
+| **Anime/cel-shaded style** | ★★★★ | ★★ | ★★★★ | ★★★ | ★★★ | ★★★ | ★★★ |
+| **Multi-character in one shot** | ★ | ★ | ★★ | ★★ | ★ | ★ | ★ |
+| **Prompt adherence** | ★★★ | ★★★★ | ★★★ | ★★★★ | ★★★ | ★★ | ★★★ |
+| **Generation speed** | ★★ | ★★★ | ★★★★ | ★★★ | ★★★ | ★★ | ★★ |
+| **Cost (per image/5s video)** | $0.05-0.10 | $0.04 | $0.003 | $0.01 | Free* | $0.50 | $0.20 |
+| **Reference image support** | ★★★★ (--cref) | ★ | ★★★★ (IP-Adapter) | ★★★ | ★★★★ | ★★ | ★★ |
+| **Free/local option** | No | No | Yes | Yes | Yes* | No | No |
+
+**Legend**: ★ = Poor, ★★ = Fair, ★★★ = Good, ★★★★ = Excellent. "—" = Not applicable.
+
+### Quick Pick Guide
+
+- **Best for static anime images**: Midjourney v6 (with --cref) or SDXL + ControlNet (local, free)
+- **Best for prompt accuracy**: DALL-E 3 or Flux
+- **Best for video motion**: Runway Gen-3 (smoother) or Kling (more cinematic)
+- **Best for zero budget**: SDXL + AnimateDiff on local GPU, or Gemini Image (free tier)
+- **Best for multi-character**: Avoid if possible. If forced, use SDXL with IP-Adapter + manual compositing.
+
+### Honest Warnings
+
+- **No video model can reliably maintain a character's face for >3 seconds.** Plan for compositing or accept some drift.
+- **Midjourney's --cref works well for static images but does not carry over to video.** Video models ignore MJ reference images.
+- **Free tiers have rate limits.** Gemini Image free tier allows ~60 images/day. Plan accordingly.
+
+---
+
 *Reference Version: 2.2.0 | Aligns with SKILL.md v2.1.0*

@@ -1,0 +1,10 @@
+{
+  "template": "noir",
+  "cultural_context": "western",
+  "color_arc": [
+    {"scene_range": "S01-S03", "dominant_color": "charcoal_black", "accent_color": "cigarette_amber", "emotion": "cynical detachment", "temperature": "cool"},
+    {"scene_range": "S04-S06", "dominant_color": "wet_asphalt_gray", "accent_color": "neon_red", "emotion": "danger and desire", "temperature": "mixed"},
+    {"scene_range": "S07-S08", "dominant_color": "pitch_black", "accent_color": "muzzle_flash_white", "emotion": "violent revelation", "temperature": "cool"},
+    {"scene_range": "S09", "dominant_color": "fog_gray", "accent_color": "dawn_silver", "emotion": "ambiguous resolution", "temperature": "neutral"}
+  ]
+}

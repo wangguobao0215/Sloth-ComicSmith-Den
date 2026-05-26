@@ -1,0 +1,10 @@
+{
+  "template": "manga-ink",
+  "cultural_context": "east_asian",
+  "color_arc": [
+    {"scene_range": "S01-S03", "dominant_color": "white", "accent_color": "black", "emotion": "clarity and innocence", "temperature": "neutral"},
+    {"scene_range": "S04-S06", "dominant_color": "light_gray", "accent_color": "dense_black", "emotion": "growing shadows", "temperature": "cool"},
+    {"scene_range": "S07-S08", "dominant_color": "black", "accent_color": "white", "emotion": "maximum contrast, reversal", "temperature": "cool"},
+    {"scene_range": "S09", "dominant_color": "white", "accent_color": "gray", "emotion": "return to peace", "temperature": "neutral"}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "template": "ghibli",
+  "cultural_context": "east_asian",
+  "color_arc": [
+    {"scene_range": "S01-S03", "dominant_color": "soft_sky_blue", "accent_color": "fresh_grass_green", "emotion": "innocence and wonder", "temperature": "warm"},
+    {"scene_range": "S04-S06", "dominant_color": "golden_hour_orange", "accent_color": "deep_forest_green", "emotion": "growing warmth and connection", "temperature": "warm"},
+    {"scene_range": "S07-S08", "dominant_color": "stormy_gray", "accent_color": "lightning_white", "emotion": "conflict and courage", "temperature": "cool"},
+    {"scene_range": "S09", "dominant_color": "gentle_pink", "accent_color": "butterfly_yellow", "emotion": "peace and hope", "temperature": "warm"}
+  ]
+}

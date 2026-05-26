@@ -1,6 +1,6 @@
 ---
 name: sloth-comicsmith-den
-version: 2.1.0
+version: 2.2.0
 description: >-
   Transforms text scripts into production-ready comic/video projects with dramatic
   structure analysis, character arc tracking, color scripting, and precise cinematography.
@@ -16,7 +16,7 @@ metadata:
   tags: comic storyboard script character-design video-synthesis ai-pipeline cinematography color-script
 ---
 
-# Sloth-ComicSmith-Den — 深匠绘 · 剧本到漫画视频流水线 v2.1
+# Sloth-ComicSmith-Den — 深匠绘 · 剧本到漫画视频流水线 v2.2
 
 > <p align="center"><img src="https://raw.githubusercontent.com/wangguobao0215/Sloth-ComicSmith-Den/main/assets/qrcode.jpg" width="80" /><br/><sub>扫码关注 <b>树懒老K</b> · 获取更多 AI 技能</sub><br/><i>慢一点，深一度</i></p>
 >
@@ -31,7 +31,22 @@ Before starting, confirm the user has:
 - API keys for at least one image model (DALL-E, Midjourney, Stable Diffusion, or Gemini Image)
 - For video synthesis: API keys for video models (Kling, Seedance, Veo, Runway, or Pika) — optional
 
-If the user lacks API keys, complete stages 1–3 (text/structured outputs) and pause before stage 4.
+### ⚠️ Honest Limitations (Read This First)
+
+**AI video character consistency is NOT guaranteed.** As of 2026, no AI video model (Runway Gen-3, Kling 1.5, Seedance, Veo) can reliably maintain a character's face across more than ~3 seconds of motion. If your goal is a polished animated video with strict character consistency, plan for significant manual post-production — or treat video as an experimental bonus, not the primary deliverable.
+
+**Cost estimate**: A 10-minute story with 30–60 shots costs roughly **$50–200** in API calls (images + video). Re-dos for style or consistency issues can easily double this. Use the `scripts/cost_estimator.py` tool after Stage 3 to get a precise projection.
+
+**Budget modes** (ask the user to pick one):
+- `full`: Generate all shots as images + video (highest fidelity, highest cost).
+- `key_shots_only`: Generate only establishing, climax, and transition shots as images. Fill the rest with text descriptions or static panels (cuts cost by ~60%).
+- `storyboard_only`: Stops at Stage 3. Outputs a professional storyboard PDF with shot descriptions and dialogue — zero API cost, maximum creative control for human artists.
+
+**Free/low-cost alternatives** (no API budget):
+- Use Stable Diffusion XL + AnimateDiff locally (requires 8GB+ VRAM).
+- Use `scripts/cost_estimator.py --mode local` to estimate local GPU time vs. cloud API cost.
+
+If the user lacks API keys, default to `storyboard_only` mode and complete stages 1–3. Pause before stage 4.
 
 ## Workflow Overview
 
@@ -41,9 +56,10 @@ Run these stages sequentially. After each stage, present the output to the user 
 Stage 1: Parse Script          → scenes.json + raw_script.md
 Stage 2: Design World          → characters.json + environments.json + color_script.json + character_prompts.md + assets/characters/ + references/
 Stage 3: Generate Storyboard   → storyboard.json + shot_list.md
+Stage 3.5: Validate & Preview  → test_images/ (1-2 key shots) + cost_estimate.json
 Stage 4: Generate Images       → assets/images/ + assets/comic-pages/ (optional)
 Stage 5: Synthesize Video      → assets/video/ + output_raw.mp4 (optional)
-Stage 5b: Post-Production      → output_final.mp4 + post_production_plan.json
+Stage 5b: Post-Production      → output_final.mp4 + post_production_plan.json (optional advanced workflow)
 ```
 
 All structured files use the schemas defined in [reference.md](reference.md).
@@ -179,6 +195,24 @@ All structured files use the schemas defined in [reference.md](reference.md).
 
 ---
 
+## Stage 3.5: Validate & Preview (Recommended)
+
+**Goal**: Generate 1–2 test images from critical shots before committing to full production. Catch style drift, character inconsistency, and prompt issues early.
+
+**Process**:
+1. Pick **two representative shots** from the storyboard:
+   - One establishing/master shot (tests environment + style)
+   - One close-up/reaction shot (tests character consistency + expression)
+2. Generate them with locked seeds and full prompts.
+3. Present to the user with a side-by-side comparison against the `visual_style_anchor`.
+4. If the user rejects: iterate on the style anchor, consistency prompt, or seed. Do not proceed to Stage 4 until approved.
+5. Run `scripts/cost_estimator.py` to project total cost based on shot count and chosen budget mode.
+6. Save preview images to `test_images/` and cost projection to `cost_estimate.json`.
+
+**Why this matters**: Regenerating 2 test shots is cheap. Regenerating 40 shots because the style was wrong is expensive and demoralizing.
+
+---
+
 ## Stage 4: Generate Images (Optional)
 
 **Goal**: Produce static images with strict consistency controls, batch fault tolerance, and optional comic page layout.
@@ -200,11 +234,13 @@ All structured files use the schemas defined in [reference.md](reference.md).
    - **Honest limitation**: Tell the user that unassisted AI cannot reliably maintain two distinct faces in motion. Plan for compositing.
 3. For each shot, build `image_prompt` using this priority order:
    1. `color_direction` (highest weight — color impacts AI models strongly)
-   2. Character consistency prompt + expression/micro-expression reference
+   2. Character consistency prompt + expression reference
    3. Shot-specific details (framing, function, action, environment, lighting scenario)
    4. Silhouette insurance + rim light if needed
    5. Style anchor + reference board tags
    6. Spatial context from master layout anchor
+
+   > 🔮 **Future-proof fields**: `acting_beats`, `micro_expression`, and `action_units_facs` are stored in storyboard.json and characters.json for **human reference** and **future AI model compatibility**. Current image/video models (Midjourney, DALL-E, SDXL, Kling, Runway) cannot reliably execute micro-expressions or FACS action units. Use the 8 core expressions (neutral/happy/sad/angry/surprised/disgusted/fearful/determined) for AI prompts, and treat micro-expressions as director's notes for manual illustration or future model upgrades.
 4. Generate in batches of 5–8. Track with `generation_log.json`.
 5. **Batch fault tolerance**:
    - Attempt 1: full prompt with locked seed
@@ -240,9 +276,30 @@ All structured files use the schemas defined in [reference.md](reference.md).
 
 ---
 
-## Stage 5b: Post-Production & Repair (Required for Release)
+## Stage 5b: Post-Production & Repair (Optional Advanced Workflow)
 
 **Goal**: Fix AI artifacts, ensure color consistency, stabilize motion, and deliver a professional final cut.
+
+⚠️ **This stage requires significant manual effort or professional software.** It is NOT automated. If you need a quick result, use the `scripts/compile_video.py` FFmpeg-only path instead (see below).
+
+### Option A: Quick Compile (FFmpeg-Only, Recommended for Most Users)
+
+Use `scripts/compile_video.py` to automatically:
+1. Read `storyboard.json` for shot order, durations, and transition types.
+2. Concatenate `assets/video/{shot_id}.mp4` clips with FFmpeg `xfade` (fade / dissolve / wipe).
+3. Burn subtitles from `subtitles.srt` with configurable style (font, position, outline).
+4. Add a simple BGM track if provided.
+5. Export `output_final.mp4` in one command.
+
+**Requirements**: FFmpeg installed. No GUI tools needed. Cross-platform.
+
+```bash
+python scripts/compile_video.py my_project --transition fade --bgm music.mp3
+```
+
+### Option B: Professional Repair Pipeline (For Perfectionists)
+
+Use this only if you have time, budget, and experience with the tools listed.
 
 **Process**:
 1. **Concatenate** raw clips with FFmpeg `xfade` transitions (fade / dissolve)
@@ -260,7 +317,15 @@ All structured files use the schemas defined in [reference.md](reference.md).
    - Apply voice direction notes from `audio_direction.voice_direction`
 8. **Final export** to `output_final.mp4`
 
-**Tools**: DaVinci Resolve (color/flicker), After Effects (stabilize), FaceFusion (face repair), EbSynth (style propagation), FFmpeg (concat/subtitles), Audition / Reaper (audio mix).
+**Tools & honest effort estimates**:
+| Tool | Cost | Learning Curve | When You Need It |
+|------|------|----------------|------------------|
+| DaVinci Resolve | Free | 4–8 hours | Color grading, flicker removal |
+| After Effects | $20+/month | 10+ hours | Motion stabilization, complex compositing |
+| FaceFusion | Free (needs CUDA GPU) | 2–4 hours | Facial frame replacement |
+| EbSynth | Free | 4–6 hours | Style propagation across frames (requires hand-drawn masks) |
+| Audition / Reaper | $20+/month or $60 one-time | 4–6 hours | Multi-track audio mixing |
+| FFmpeg | Free | 1–2 hours | Concatenation, subtitle burn, basic transitions |
 
 **Output**: `post_production_plan.json` tracking each repair step status.
 
@@ -280,6 +345,7 @@ comic-project/
 ├── failed_shots.json
 ├── batch_plan.json
 ├── post_production_plan.json
+├── cost_estimate.json              # Generated by cost_estimator.py
 ├── subtitles.srt
 ├── raw_script.md
 ├── character_prompts.md
@@ -289,26 +355,29 @@ comic-project/
 │   ├── style_board/
 │   ├── animatic/
 │   └── ref_index.json
-└── assets/
-    ├── characters/
-    │   └── Lin/
-    │       ├── front.png
-    │       ├── side.png
-    │       ├── back.png
-    │       ├── three_quarter.png
-    │       └── expressions/
-    │           ├── neutral.png
-    │           ├── sad.png
-    │           └── ...
-    ├── images/
-    │   ├── S01-01.png
-    │   └── ...
-    ├── comic-pages/
-    │   ├── page_01.png
-    │   └── ...
-    └── video/
-        ├── S01-01.mp4
-        └── ...
+├── assets/
+│   ├── characters/
+│   │   └── Lin/
+│   │       ├── front.png
+│   │       ├── side.png
+│   │       ├── back.png
+│   │       ├── three_quarter.png
+│   │       └── expressions/
+│   │           ├── neutral.png
+│   │           ├── sad.png
+│   │           └── ...
+│   ├── images/
+│   │   ├── S01-01.png
+│   │   └── ...
+│   ├── comic-pages/
+│   │   ├── page_01.png
+│   │   └── ...
+│   └── video/
+│       ├── S01-01.mp4
+│       └── ...
+└── test_images/                    # Stage 3.5 preview outputs
+    ├── establishing_test.png
+    └── closeup_test.png
 ```
 
 ---
