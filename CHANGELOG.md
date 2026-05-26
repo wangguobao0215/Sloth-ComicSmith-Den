@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.1] - 2026-05-26
+
+### 品牌重命名
+
+- 中文品名从「匠漫」升级为「深匠绘 · 剧本到漫画视频流水线」
+- `SKILL.md`：更新 `description_zh` 与 H1 标题
+- `README.md`：更新 H1 标题，新增「## 品名释义」章节，阐释「深」「匠」「绘」三字含义
+- `README_EN.md`：标题嵌入中文品名，格式为 `Sloth-ComicSmith-Den — 深匠绘 · Script to Comic/Video Pipeline`
+
 ## [2.1.0] - 2026-05-26
 
 ### 新增（资深动漫设计师评估后优化）
