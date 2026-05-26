@@ -7,7 +7,7 @@ description: >-
   Use when the user wants to create comics, storyboards, animated videos from scripts,
   or when they mention 剧本, 漫画, 分镜, storyboard, character design, or video synthesis from text.
 description_zh: >-
-  匠漫 · 剧本到漫画视频流水线 v2。将文本剧本转化为结构化漫画/视频项目，
+  深匠绘 · 剧本到漫画视频流水线 v2。将文本剧本转化为结构化漫画/视频项目，
   支持戏剧结构分析、角色弧光追踪、色彩脚本、精准镜头语法与声音设计。
   当用户要求创作漫画、生成分镜、将剧本转为视频、或提及剧本/漫画/分镜时调用。
 license: MIT
@@ -16,7 +16,7 @@ metadata:
   tags: comic storyboard script character-design video-synthesis ai-pipeline cinematography color-script
 ---
 
-# Sloth-ComicSmith-Den — 匠漫 · 剧本到漫画视频流水线 v2.1
+# Sloth-ComicSmith-Den — 深匠绘 · 剧本到漫画视频流水线 v2.1
 
 > <p align="center"><img src="https://raw.githubusercontent.com/wangguobao0215/Sloth-ComicSmith-Den/main/assets/qrcode.jpg" width="80" /><br/><sub>扫码关注 <b>树懒老K</b> · 获取更多 AI 技能</sub><br/><i>慢一点，深一度</i></p>
 >

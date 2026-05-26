@@ -2,7 +2,7 @@
   <img src="assets/sloth-avatar-round.png" width="120" />
 </p>
 
-<h1 align="center">Sloth-ComicSmith-Den — Script to Comic/Video Pipeline</h1>
+<h1 align="center">Sloth-ComicSmith-Den — 深匠绘 · Script to Comic/Video Pipeline</h1>
 
 <p align="center">
   <strong>Transform text scripts into production-ready comic/video projects</strong><br/>
